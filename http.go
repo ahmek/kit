@@ -9,13 +9,16 @@ import (
 
 // HTTPContext 请求信息封装
 type HTTPContext struct {
-	w http.ResponseWriter
-	r *http.Request
-	// uid 用户登录态
-	user interface{}
-	// 登录态验证类型 [0.不验证; 1.验证登录; 2.验证且必须为管理员]
-	authType int8
+	w        http.ResponseWriter
+	r        *http.Request
+	user     interface{} // 用户登录态
+	authType int8        // 登录态验证类型 [0.不验证; 1.验证登录; 2.验证且必须为管理员]
 }
+
+type (
+	tokenCBK func(*http.Request) interface{}
+	adminCBK func(*http.Request) error
+)
 
 func NewHTTPContext(w http.ResponseWriter, r *http.Request) *HTTPContext {
 	return &HTTPContext{

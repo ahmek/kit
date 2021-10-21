@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"net/http"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -29,8 +28,6 @@ type (
 		Msg  string      `json:"msg"`
 		Data interface{} `json:"data,omitempty"`
 	}
-	tokenCBK func(*http.Request) interface{}
-	adminCBK func(*http.Request) error
 	RouteCBK func(*HTTPContext) (interface{}, error)
 	ErrCBK   func(*HTTPContext) error
 )

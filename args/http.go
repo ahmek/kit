@@ -3,6 +3,7 @@ package kit
 import (
 	"net/http"
 	"net/url"
+	"reflect"
 
 	"github.com/ahmek/kit/types"
 )
@@ -84,6 +85,12 @@ func (ctx *HTTPContext) GetUser() interface{} {
 
 // GetUid 获取登录态当前用户id
 func (ctx *HTTPContext) GetUid() int64 {
-	// return ctx.user.Id
+	rvf := reflect.ValueOf(ctx.user)
+	if rvf.Kind().String() == "ptr" {
+		uid := rvf.Elem().FieldByName("Uid")
+		if ut := uid.Type().String(); ut == "int" || ut == "int64" || ut == "int32" || ut == "uint64" {
+			return uid.Int()
+		}
+	}
 	return 0
 }

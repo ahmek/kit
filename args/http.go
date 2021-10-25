@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"reflect"
 
+	"github.com/ahmek/kit/funcs"
 	"github.com/ahmek/kit/types"
 )
 
@@ -15,11 +16,6 @@ type HTTPContext struct {
 	user     interface{} // 用户登录态
 	authType int8        // 登录态验证类型 [0.不验证; 1.验证登录; 2.验证且必须为管理员]
 }
-
-type (
-	tokenCBK func(*http.Request) interface{}
-	adminCBK func(*http.Request) error
-)
 
 func NewHTTPContext(w http.ResponseWriter, r *http.Request) *HTTPContext {
 	return &HTTPContext{
@@ -52,25 +48,6 @@ func (ctx *HTTPContext) GetURL() *url.URL {
 	return ctx.r.URL
 }
 
-// Auth 验证登录情况
-func (c *HTTPContext) Auth(token tokenCBK, isAdmin adminCBK) error {
-	if c.authType == 0 {
-		return nil
-	}
-
-	user := token(c.r)
-	if user == nil && c.authType == 1 {
-		return types.ErrorTokenInvalid
-	}
-	c.user = user
-	if c.authType == 2 {
-		if err := isAdmin(c.r); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // SetAuthType 设置登录权限
 // [0.不验证登录; 1.验证; 2.验证且必须是管理员]
 func (ctx *HTTPContext) SetAuthType(t int8) {
@@ -82,6 +59,11 @@ func (ctx *HTTPContext) GetAuthType() int8 {
 	return ctx.authType
 }
 
+// SetUser 设置登录态用户数据
+func (ctx *HTTPContext) SetUser(user interface{}) {
+	ctx.user = user
+}
+
 // GetUser 获取登录态当前用户id
 func (ctx *HTTPContext) GetUser() interface{} {
 	return ctx.user
@@ -90,9 +72,11 @@ func (ctx *HTTPContext) GetUser() interface{} {
 // GetUid 获取登录态当前用户id
 func (ctx *HTTPContext) GetUid() int64 {
 	rvf := reflect.ValueOf(ctx.user)
-	if rvf.Kind().String() == "ptr" {
-		uid := rvf.Elem().FieldByName("Uid")
-		if ut := uid.Type().String(); ut == "int" || ut == "int64" || ut == "int32" || ut == "uint64" {
+	if rvf.Kind().String() != "ptr" {
+		return 0
+	}
+	if uid := rvf.Elem().FieldByName("Id"); uid.IsValid() {
+		if ut := uid.Type().String(); funcs.IsKindInt(ut) || funcs.IsKindUint(ut) {
 			return uid.Int()
 		}
 	}

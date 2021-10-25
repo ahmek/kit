@@ -54,8 +54,12 @@ func (ctx *HTTPContext) GetURL() *url.URL {
 
 // Auth 验证登录情况
 func (c *HTTPContext) Auth(token tokenCBK, isAdmin adminCBK) error {
+	if c.authType == 0 {
+		return nil
+	}
+
 	user := token(c.r)
-	if user == nil || c.authType == 1 {
+	if user == nil && c.authType == 1 {
 		return types.ErrorTokenInvalid
 	}
 	c.user = user

@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"reflect"
 
+	"github.com/ahmek/kit/funcs"
 	"github.com/ahmek/kit/types"
 )
 
@@ -62,6 +63,8 @@ func (c *HTTPContext) Auth(token tokenCBK, isAdmin adminCBK) error {
 	if user == nil && c.authType == 1 {
 		return types.ErrorTokenInvalid
 	}
+
+	// 设置当前登录者信息
 	c.user = user
 	if c.authType == 2 {
 		if err := isAdmin(c.r); err != nil {
@@ -90,9 +93,11 @@ func (ctx *HTTPContext) GetUser() interface{} {
 // GetUid 获取登录态当前用户id
 func (ctx *HTTPContext) GetUid() int64 {
 	rvf := reflect.ValueOf(ctx.user)
-	if rvf.Kind().String() == "ptr" {
-		uid := rvf.Elem().FieldByName("Uid")
-		if ut := uid.Type().String(); ut == "int" || ut == "int64" || ut == "int32" || ut == "uint64" {
+	if rvf.Kind().String() != "ptr" {
+		return 0
+	}
+	if uid := rvf.Elem().FieldByName("Id"); uid.IsValid() {
+		if ut := uid.Type().String(); funcs.IsKindInt(ut) || funcs.IsKindUint(ut) {
 			return uid.Int()
 		}
 	}

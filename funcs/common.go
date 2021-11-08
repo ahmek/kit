@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 )
 
@@ -189,4 +190,13 @@ func formatString(str string) string {
 	}
 	str = strings.Replace(str, "\"", "\\\"", -1)
 	return `"` + str + `"`
+}
+
+// RangeRand 生成区间[m, n]的安全随机数
+func RangeRand(min, max int) int {
+	if min > max {
+		return 0
+	}
+	rand.Seed(time.Now().UnixNano())
+	return rand.Intn(max) + min
 }

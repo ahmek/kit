@@ -9,7 +9,7 @@ import (
 	"github.com/ahmek/kit/types"
 )
 
-// HTTPContext 请求信息封 装
+// HTTPContext 请求信息封装
 type HTTPContext struct {
 	w        http.ResponseWriter
 	r        *http.Request
